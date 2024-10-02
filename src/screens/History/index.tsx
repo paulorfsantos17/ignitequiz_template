@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, ScrollView, Alert, Pressable } from 'react-native';
 import { HouseLine, Trash } from 'phosphor-react-native';
@@ -17,6 +17,8 @@ export function History() {
   const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<HistoryProps[]>([]);
 
+  const swipeableRefs = useRef<Swipeable[]>([])
+
   const { goBack } = useNavigation();
 
   async function fetchHistory() {
@@ -31,7 +33,8 @@ export function History() {
     fetchHistory();
   }
 
-  function handleRemove(id: string) {
+  function handleRemove(id: string, index: number) {
+    swipeableRefs.current[index].close();
     Alert.alert(
       'Remover',
       'Deseja remover esse registro?',
@@ -67,7 +70,7 @@ export function History() {
         showsVerticalScrollIndicator={false}
       >
         {
-          history.map((item) => (
+          history.map((item, index) => (
           <Animated.View
             key={item.id}
             entering={SlideInRight}
@@ -75,18 +78,25 @@ export function History() {
             layout={Layout.springify()}
           >
             <Swipeable 
+            ref={(ref) => {
+              if(ref) {
+                swipeableRefs.current.push(ref);
+              }
+            }}
             overshootLeft={false}
             containerStyle={styles.swipeableContainer}
+            leftThreshold={10}
+            renderRightActions={() => null}
+            onSwipeableOpen={(() => handleRemove(item.id, index))}
             renderLeftActions={() =>  (
-                <Pressable 
+                <View 
                   style={styles.swipeableRemove}
-                  onPress={() => handleRemove(item.id)}
                 >
                   <Trash  
                     size={32} 
                     color={THEME.COLORS.GREY_100}
                   />
-                </Pressable>
+                </View>
               )}
             >
               <HistoryCard data={item} />
