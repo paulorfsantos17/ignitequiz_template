@@ -9,7 +9,6 @@ import { QuizCard } from '../../components/QuizCard';
 
 import { styles } from './styles';
 import { QUIZZES } from '../../data/quizzes';
-import Animated, { FlipInYLeft } from 'react-native-reanimated';
 
 export function Home() {
   const [quizzes, setQuizzes] = useState(QUIZZES);
@@ -41,7 +40,7 @@ export function Home() {
         subtitle="Treine seus conhecimento"
         onPress={() => navigate('history')}
       />
-      
+
       <View style={styles.levels}>
         <Level title="Fácil" type="EASY" onPress={() => handleLevelFilter(1)} isChecked={levels.includes(1)} />
         <Level title="Médio" type="MEDIUM" onPress={() => handleLevelFilter(2)} isChecked={levels.includes(2)} />
@@ -51,9 +50,8 @@ export function Home() {
       <FlatList
         data={quizzes}
         keyExtractor={item => item.id}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <QuizCard
-            index={index}
             data={item}
             onPress={() => navigate('quiz', { id: item.id })}
           />
