@@ -30,8 +30,10 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
+    "@rocketseat/eslint-config": "^2.2.2",
     "@types/react": "~18.0.27",
     "@types/react-native": "^0.70.19",
+    "eslint": "^8.57.1",
     "react-native-svg-transformer": "^1.5.0",
     "typescript": "^4.9.4"
   },
