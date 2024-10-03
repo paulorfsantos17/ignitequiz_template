@@ -1,6 +1,6 @@
-import  {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native'
 
-export const styles  = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -10,5 +10,5 @@ export const styles  = StyleSheet.create({
     height: 249,
     position: 'absolute',
     zIndex: 1,
-  }
+  },
 })

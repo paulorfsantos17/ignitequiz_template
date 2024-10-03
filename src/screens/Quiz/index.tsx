@@ -1,54 +1,67 @@
-import { useEffect, useState } from 'react';
-import { Alert,  View, Text } from 'react-native';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from 'react'
+import { Alert, View, Text } from 'react-native'
 
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native'
 
-import { styles } from './styles';
+import { styles } from './styles'
 
-import { QUIZ } from '../../data/quiz';
-import { historyAdd } from '../../storage/quizHistoryStorage';
+import { QUIZ } from '../../data/quiz'
+import { historyAdd } from '../../storage/quizHistoryStorage'
 
-import { Loading } from '../../components/Loading';
-import { Question } from '../../components/Question';
-import { QuizHeader } from '../../components/QuizHeader';
-import { ConfirmButton } from '../../components/ConfirmButton';
-import { OutlineButton } from '../../components/OutlineButton';
-import Animated, { Easing, Extrapolate, interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
-import { ProgressBar } from '../../components/ProgressBar';
-import { THEME } from '../../styles/theme';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { OverLayFeedback } from '../../components/OvalerlayFeedback';
+import { Loading } from '../../components/Loading'
+import { Question } from '../../components/Question'
+import { QuizHeader } from '../../components/QuizHeader'
+import { ConfirmButton } from '../../components/ConfirmButton'
+import { OutlineButton } from '../../components/OutlineButton'
+import Animated, {
+  Easing,
+  Extrapolate,
+  interpolate,
+  runOnJS,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated'
+import { ProgressBar } from '../../components/ProgressBar'
+import { THEME } from '../../styles/theme'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { OverLayFeedback } from '../../components/OvalerlayFeedback'
 
 interface Params {
-  id: string;
+  id: string
 }
 
-type QuizProps = typeof QUIZ[0];
+type QuizProps = (typeof QUIZ)[0]
 
 const CARD_INCLINATION = 10
-const CARD_SKIP_AREA= -200
+const CARD_SKIP_AREA = -200
 export function Quiz() {
-  const [points, setPoints] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [quiz, setQuiz] = useState<QuizProps>({} as QuizProps);
-  const [alternativeSelected, setAlternativeSelected] = useState<null | number>(null);
-  const  [ statusReply, setStatusReply] = useState(0)
+  const [points, setPoints] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [quiz, setQuiz] = useState<QuizProps>({} as QuizProps)
+  const [alternativeSelected, setAlternativeSelected] = useState<null | number>(
+    null,
+  )
+  const [statusReply, setStatusReply] = useState(0)
 
   const shake = useSharedValue(0)
   const scrollY = useSharedValue(0)
   const cardPosition = useSharedValue(0)
 
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation()
 
-  const route = useRoute();
-  const { id } = route.params as Params;
+  const route = useRoute()
+  const { id } = route.params as Params
 
   function handleSkipConfirm() {
     Alert.alert('Pular', 'Deseja realmente pular a questão?', [
       { text: 'Sim', onPress: () => handleNextQuestion() },
-      { text: 'Não', onPress: () => { } }
-    ]);
+      { text: 'Não', onPress: () => {} },
+    ])
   }
 
   async function handleFinished() {
@@ -57,38 +70,37 @@ export function Quiz() {
       title: quiz.title,
       level: quiz.level,
       points,
-      questions: quiz.questions.length
-    });
+      questions: quiz.questions.length,
+    })
 
     navigate('finish', {
       points: String(points),
       total: String(quiz.questions.length),
-    });
+    })
   }
 
   function handleNextQuestion() {
     if (currentQuestion < quiz.questions.length - 1) {
-      setCurrentQuestion(prevState => prevState + 1)
+      setCurrentQuestion((prevState) => prevState + 1)
     } else {
-      handleFinished();
+      handleFinished()
     }
   }
 
   async function handleConfirm() {
     if (alternativeSelected === null) {
-      return handleSkipConfirm();
+      return handleSkipConfirm()
     }
 
     if (quiz.questions[currentQuestion].correct === alternativeSelected) {
       setStatusReply(1) // acertou
-      setPoints(prevState => prevState + 1); 
-      handleNextQuestion()    
+      setPoints((prevState) => prevState + 1)
+      handleNextQuestion()
     } else {
       setStatusReply(2) // errou
-      shakeAnimation();
-
+      shakeAnimation()
     }
-    setAlternativeSelected(null);
+    setAlternativeSelected(null)
   }
 
   function handleStop() {
@@ -100,105 +112,109 @@ export function Quiz() {
       {
         text: 'Sim',
         style: 'destructive',
-        onPress: () => navigate('home')
+        onPress: () => navigate('home'),
       },
-    ]);
+    ])
 
-    return true;
+    return true
   }
 
   function shakeAnimation() {
     shake.value = withSequence(
-      withTiming(3, {duration: 400, easing: Easing.bounce}), 
-      withTiming(0, undefined,(finished)  => {
-        if(finished) {
+      withTiming(3, { duration: 400, easing: Easing.bounce }),
+      withTiming(0, undefined, (finished) => {
+        if (finished) {
           runOnJS(handleNextQuestion)()
         }
-        
-      })
+      }),
     )
   }
 
-  const shakeStyleAnimation = useAnimatedStyle(() =>  {
+  const shakeStyleAnimation = useAnimatedStyle(() => {
     return {
       transform: [
         {
           translateX: interpolate(
-          shake.value,
-            [0, 0.5, 1, 1.5 ,2 ,2.5 ,3],
-            [0, -15, 0, 15, 0, -15 ,0]
-          )
-        }
-      ]
+            shake.value,
+            [0, 0.5, 1, 1.5, 2, 2.5, 3],
+            [0, -15, 0, 15, 0, -15, 0],
+          ),
+        },
+      ],
     }
   })
 
   const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) =>  {
+    onScroll: (event) => {
       scrollY.value = event.contentOffset.y
-    } 
+    },
   })
 
   const fixedProgressBarAStyles = useAnimatedStyle(() => {
-    return  {
+    return {
       position: 'absolute',
       paddingTop: 50,
-      zIndex:1,
+      zIndex: 1,
       backgroundColor: THEME.COLORS.GREY_500,
       width: '110%',
       left: '-5%',
-      opacity: interpolate(scrollY.value,[ 50, 90], [0, 1], Extrapolate.CLAMP),
+      opacity: interpolate(scrollY.value, [50, 90], [0, 1], Extrapolate.CLAMP),
       transform: [
-        { 
-          translateX:interpolate(scrollY.value,[ 50, 100], [-40, 0], Extrapolate.CLAMP)
-        }
-      ]
+        {
+          translateX: interpolate(
+            scrollY.value,
+            [50, 100],
+            [-40, 0],
+            Extrapolate.CLAMP,
+          ),
+        },
+      ],
     }
   })
 
   const headerStyles = useAnimatedStyle(() => {
-    return  {
-      opacity: interpolate(scrollY.value,[ 60, 90], [1, 0], Extrapolate.CLAMP),
+    return {
+      opacity: interpolate(scrollY.value, [60, 90], [1, 0], Extrapolate.CLAMP),
     }
   })
 
-  const onPan = Gesture
-  .Pan()
-  .activateAfterLongPress(200)
-  .onUpdate((event)=>  {
-    const isMoveToLeft = event.translationX < 0
-    if(isMoveToLeft) {
-      cardPosition.value = event.translationX
-    }
-  }).onEnd((event)=>  {
-    const isSkipToCard = event.translationX < CARD_SKIP_AREA
-    if(isSkipToCard) { 
-      runOnJS(handleSkipConfirm)()
-    }
-    cardPosition.value = withTiming(0)
-  })
+  const onPan = Gesture.Pan()
+    .activateAfterLongPress(200)
+    .onUpdate((event) => {
+      const isMoveToLeft = event.translationX < 0
+      if (isMoveToLeft) {
+        cardPosition.value = event.translationX
+      }
+    })
+    .onEnd((event) => {
+      const isSkipToCard = event.translationX < CARD_SKIP_AREA
+      if (isSkipToCard) {
+        runOnJS(handleSkipConfirm)()
+      }
+      cardPosition.value = withTiming(0)
+    })
 
   const dragStyles = useAnimatedStyle(() => {
     const rotate = cardPosition.value / CARD_INCLINATION
-    return  {
+    return {
       transform: [
         { translateX: cardPosition.value },
-        {rotateZ: `${rotate}deg`}
-    ]
+        { rotateZ: `${rotate}deg` },
+      ],
     }
   })
 
   useEffect(() => {
-    const quizSelected = QUIZ.filter(item => item.id === id)[0];
-    setQuiz(quizSelected);
-    setIsLoading(false);
-  }, []);
+    const quizSelected = QUIZ.filter((item) => item.id === id)[0]
+    setQuiz(quizSelected)
+    setIsLoading(false)
+  }, [])
 
   useEffect(() => {
     if (quiz.questions) {
-      handleNextQuestion();
+      handleNextQuestion()
     }
-  }, [points]);
+  }, [points])
 
   if (isLoading) {
     return <Loading />
@@ -206,15 +222,13 @@ export function Quiz() {
 
   return (
     <View style={styles.container}>
-      <OverLayFeedback status={statusReply}/>
+      <OverLayFeedback status={statusReply} />
       <Animated.View style={fixedProgressBarAStyles}>
-      <Text style={styles.title}>
-        {quiz.title}
-      </Text>
-      <ProgressBar  
-        current={currentQuestion + 1} 
-        total={quiz.questions.length}
-      />
+        <Text style={styles.title}>{quiz.title}</Text>
+        <ProgressBar
+          current={currentQuestion + 1}
+          total={quiz.questions.length}
+        />
       </Animated.View>
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
@@ -222,33 +236,31 @@ export function Quiz() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-  <Animated.View style={[styles.header , headerStyles]}>
-    <QuizHeader
-      title={quiz.title}
-      currentQuestion={currentQuestion + 1}
-      totalOfQuestions={quiz.questions.length}
-    />
-  </Animated.View>
-
-      <GestureDetector gesture={onPan}>
-      <Animated.View
-      style={[shakeStyleAnimation, dragStyles]}>
-        <Question
-            key={quiz.questions[currentQuestion].title}
-            question={quiz.questions[currentQuestion]}
-            alternativeSelected={alternativeSelected}
-            setAlternativeSelected={setAlternativeSelected}
-            onUnMount={() => setStatusReply(0)}
+        <Animated.View style={[styles.header, headerStyles]}>
+          <QuizHeader
+            title={quiz.title}
+            currentQuestion={currentQuestion + 1}
+            totalOfQuestions={quiz.questions.length}
           />
-      </Animated.View>
-      </GestureDetector>
+        </Animated.View>
 
+        <GestureDetector gesture={onPan}>
+          <Animated.View style={[shakeStyleAnimation, dragStyles]}>
+            <Question
+              key={quiz.questions[currentQuestion].title}
+              question={quiz.questions[currentQuestion]}
+              alternativeSelected={alternativeSelected}
+              setAlternativeSelected={setAlternativeSelected}
+              onUnMount={() => setStatusReply(0)}
+            />
+          </Animated.View>
+        </GestureDetector>
 
         <View style={styles.footer}>
           <OutlineButton title="Parar" onPress={handleStop} />
           <ConfirmButton onPress={handleConfirm} />
         </View>
       </Animated.ScrollView>
-    </View >
-  );
+    </View>
+  )
 }
