@@ -2,7 +2,7 @@ import { View, Text, Dimensions } from 'react-native';
 
 import { Option } from '../Option';
 import { styles } from './styles';
-import Animated, { Keyframe } from 'react-native-reanimated';
+import Animated, { Keyframe, runOnJS } from 'react-native-reanimated';
 
 type QuestionProps = {
   title: string;
@@ -13,11 +13,17 @@ type Props = {
   question: QuestionProps;
   alternativeSelected?: number | null;
   setAlternativeSelected?: (value: number) => void;
+  onUnMount: () => void
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
-export function Question({ question, alternativeSelected, setAlternativeSelected }: Props) {
+export function Question({ 
+  question,
+  alternativeSelected,
+  setAlternativeSelected,
+  onUnMount
+}: Props) {
 
 const enteringKeyFrame = new Keyframe({
   0: {
@@ -59,7 +65,16 @@ const exitingKeyFrame = new Keyframe({
   return (
     <Animated.View
       entering={enteringKeyFrame.delay(300)}
-      exiting={exitingKeyFrame.delay(200)}
+      exiting={
+        exitingKeyFrame
+        .delay(200)
+        .withCallback((finished) =>  {
+          'worklet'
+          if (finished) {
+            runOnJS(onUnMount)()
+          }
+        })
+      }
       style={styles.container}
     >
       <Text style={styles.title}>
